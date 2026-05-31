@@ -1,0 +1,198 @@
+{
+  "processors": [
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "status": "operational",
+      "uptime": 99.98,
+      "incidentsCount": 2,
+      "successRate": 99.96,
+      "marketShare": 32,
+      "region": "Global",
+      "primaryRail": "Multi-Rail (Visa/MC, ACH, SEPA)",
+      "details": "Primary merchant aggregator representing high volume of global SaaS and e-commerce checkouts.",
+      "logo": "S"
+    },
+    {
+      "id": "adyen",
+      "name": "Adyen",
+      "status": "degraded",
+      "uptime": 99.85,
+      "incidentsCount": 4,
+      "successRate": 97.42,
+      "marketShare": 24,
+      "region": "EU",
+      "primaryRail": "Direct Card Acquiring & SEPA Direct Debit",
+      "details": "Unified European and Global enterprise gateway with direct local acquiring licenses.",
+      "logo": "A"
+    },
+    {
+      "id": "paypal",
+      "name": "PayPal",
+      "status": "operational",
+      "uptime": 99.91,
+      "incidentsCount": 3,
+      "successRate": 99.81,
+      "marketShare": 18,
+      "region": "Global",
+      "primaryRail": "Closed-loop Wallet & Multi-Rail Gateway",
+      "details": "Global alternative payment method provider with substantial peer-to-peer and merchant wallet flows.",
+      "logo": "P"
+    },
+    {
+      "id": "chase",
+      "name": "Chase Paymentech",
+      "status": "incident",
+      "uptime": 99.12,
+      "incidentsCount": 6,
+      "successRate": 91.15,
+      "marketShare": 12,
+      "region": "US",
+      "primaryRail": "ChaseNet, FedNow, ACH Direct",
+      "details": "Major clearing house bank processor handling direct merchant acquiring for Fortune 500 portals.",
+      "logo": "C"
+    },
+    {
+      "id": "fiserv",
+      "name": "Fiserv",
+      "status": "operational",
+      "uptime": 99.95,
+      "incidentsCount": 1,
+      "successRate": 99.93,
+      "marketShare": 8,
+      "region": "US",
+      "primaryRail": "Star Network, TeleCheck, ACH",
+      "details": "Legacy core ledger bank terminal network of enormous volume but stable enterprise rails.",
+      "logo": "F"
+    },
+    {
+      "id": "braintree",
+      "name": "Braintree",
+      "status": "operational",
+      "uptime": 99.94,
+      "incidentsCount": 2,
+      "successRate": 99.88,
+      "marketShare": 6,
+      "region": "Global",
+      "primaryRail": "Card Vault, ACH, Venmo",
+      "details": "Merchant platform powered by PayPal, focusing on subscription and custom API checkout frameworks.",
+      "logo": "B"
+    }
+  ],
+  "incidents": [
+    {
+      "id": "inc-chase-001",
+      "processorId": "chase",
+      "processorName": "Chase Paymentech",
+      "status": "incident",
+      "errorTitle": "ChaseNet Settlement Failure & Gateway Timeout",
+      "errorDetail": "API requests are timing out due to upstream database replication lockups under high-concurrency micro-deposits, impacting real-time tokenized card authorizations.",
+      "startTime": "2026-05-31 05:15 UTC",
+      "impactEstimate": "Approximately 18,000 active retail terminals and card-not-present online checkouts are receiving 504 Gateway Timeouts.",
+      "timeline": [
+        {
+          "time": "05:15 UTC",
+          "label": "Incident Started",
+          "description": "First anomalies detected in transaction processing rate. Card clearing rates dropped by 42% on US East Coast merchant terminals.",
+          "completed": true
+        },
+        {
+          "time": "05:22 UTC",
+          "label": "Alert Triggered",
+          "description": "Automated telemetry alarms fired on HTTP 504 response rate thresholds exceeding 5% global limit.",
+          "completed": true
+        },
+        {
+          "time": "05:40 UTC",
+          "label": "Identified Cause",
+          "description": "Chase DevOps identified a major lock contention in secondary shard DB during high-velocity FedNow settlement reconciliation.",
+          "completed": true
+        },
+        {
+          "time": "06:10 UTC",
+          "label": "Monitoring Hotfix",
+          "description": "Temporary caching proxy applied to authorization payloads while core replication is manually synchronized. Authorizations returning in degraded buffer mode.",
+          "completed": true
+        },
+        {
+          "time": "07:00 UTC",
+          "label": "Mitigation Status",
+          "description": "Database load stabilizing, retry error rate decreased to 8.2%. Full resolution currently being verified by downstream network testers.",
+          "completed": false
+        }
+      ]
+    },
+    {
+      "id": "inc-adyen-002",
+      "processorId": "adyen",
+      "processorName": "Adyen",
+      "status": "degraded",
+      "errorTitle": "SEPA Direct Debit Latency",
+      "errorDetail": "Significantly elevated response times on European region /v1/payments endpoints, causing transaction retries to stack up and trigger local rate-limits.",
+      "startTime": "2026-05-31 03:30 UTC",
+      "impactEstimate": "SaaS recurring billing triggers in Central and Western Europe are delayed, resulting in false declined renewal flags.",
+      "timeline": [
+        {
+          "time": "03:30 UTC",
+          "label": "Incident Started",
+          "description": "Elevated latency peaks (>4500ms) recorded across European direct-debit batch settlements.",
+          "completed": true
+        },
+        {
+          "time": "03:45 UTC",
+          "label": "Alert Triggered",
+          "description": "Webhook queue buffers exceeded warning levels. Retries climbing exponentially.",
+          "completed": true
+        },
+        {
+          "time": "04:15 UTC",
+          "label": "Identified Cause",
+          "description": "Local connection pools to SEPA clearing banks saturated due to a regional server DNS routing conflict.",
+          "completed": true
+        },
+        {
+          "time": "05:00 UTC",
+          "label": "Monitoring Hotfix",
+          "description": "Traffic successfully failover-routed through London secondary POP. Latency settling down but legacy queues still clearing.",
+          "completed": true
+        }
+      ]
+    },
+    {
+      "id": "inc-stripe-003",
+      "processorId": "stripe",
+      "processorName": "Stripe",
+      "status": "operational",
+      "errorTitle": "Webhooks Delivery Delay [Resolved]",
+      "errorDetail": "Event notifications and payment receipt webhooks delayed by 14 minutes due to an AWS us-east-1 regional message queue backup.",
+      "startTime": "2026-05-28 18:20 UTC",
+      "impactEstimate": "E-commerce order fulfillments and database status updates delayed but no charges failed.",
+      "timeline": [
+        {
+          "time": "18:20 UTC",
+          "label": "Incident Started",
+          "description": "SQS consumer queues backlog starts ballooning.",
+          "completed": true
+        },
+        {
+          "time": "18:35 UTC",
+          "label": "Alert Triggered",
+          "description": "Developer Webhook delay triggers metric alarm.",
+          "completed": true
+        },
+        {
+          "time": "18:50 UTC",
+          "label": "Identified Cause",
+          "description": "Autoscaler group throttled by system limits. Scale rules temporarily set to maximum manually.",
+          "completed": true
+        },
+        {
+          "time": "19:45 UTC",
+          "label": "Resolved",
+          "description": "Queue length back to zero, and all retried webhooks successfully delivered. Normal operation restored.",
+          "completed": true
+        }
+      ]
+    }
+  ]
+}
